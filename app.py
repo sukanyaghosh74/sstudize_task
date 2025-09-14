@@ -104,6 +104,66 @@ def main():
     if st.sidebar.button("🚪 Logout"):
         st.session_state.auth_manager.logout()
     
+    # Role-based navigation
+    user_role = st.session_state.get('user_role', 'student')  # Default to student
+    
+    # Role-based navigation options
+    if user_role == 'student':
+        navigation_options = [
+            "🏠 My Dashboard",
+            "🤖 My Roadmap",
+            "📈 My Progress Tracker"
+        ]
+    elif user_role == 'teacher':
+        navigation_options = [
+            "🏠 Teacher Dashboard",
+            "📋 Roadmap Reviews",
+            "📊 Student Progress",
+            "⚖️ Conflict Resolution"
+        ]
+    elif user_role == 'parent':
+        navigation_options = [
+            "🏠 Parent Dashboard",
+            "📊 Child Progress",
+            "⏰ Study Hours Adjustment",
+            "💬 Feedback & Concerns"
+        ]
+    elif user_role == 'admin':
+        navigation_options = [
+            "🏠 Admin Dashboard",
+            "👥 User Management",
+            "⚙️ System Settings",
+            "🔧 Data Integration",
+            "📧 Email Management",
+            "📊 System Analytics"
+        ]
+    else:
+        # Fallback for unknown roles
+        navigation_options = [
+            "🏠 Dashboard",
+            "👨‍🎓 Student Management", 
+            "🤖 AI Roadmap Generator",
+            "📈 Student Progress Tracker",
+            "👨‍🏫 Teacher Interface",
+            "👨‍👩‍👧‍👦 Parent Interface",
+            "📊 Monitoring & Analytics",
+            "⚙️ System Settings",
+            "🔧 Data Integration",
+            "📧 Email Management"
+        ]
+    
+    # Role selector (for demo purposes)
+    st.sidebar.subheader("🔐 Role Selection")
+    new_role = st.sidebar.selectbox("Switch Role:", 
+                                  ["student", "teacher", "parent", "admin"],
+                                  index=["student", "teacher", "parent", "admin"].index(user_role))
+    
+    if new_role != user_role:
+        st.session_state['user_role'] = new_role
+        st.rerun()
+    
+    st.sidebar.write(f"**Current Role:** {user_role.title()}")
+    
     page = st.sidebar.selectbox("Navigate to:", navigation_options)
     
     if page == "🏠 Dashboard":
@@ -124,6 +184,8 @@ def main():
         show_data_integration()
     elif page == "📧 Email Management":
         show_email_management()
+    elif page == "📈 Student Progress Tracker":
+        show_student_progress_tracker()
 
 def show_dashboard():
     """Display main dashboard"""
@@ -363,13 +425,13 @@ def show_roadmap_generator():
             st.info("No roadmap object found. Please generate a roadmap first.")
 
 def show_teacher_interface():
-    """Teacher interface for feedback and oversight"""
-    st.header("👨‍🏫 Teacher Interface")
+    """Enhanced Teacher interface with HITL roadmap review and approval system"""
+    st.header("👨‍🏫 Teacher Interface - Human-in-the-Loop")
     
     # Teacher login simulation
     teacher_id = st.selectbox("Select Teacher", ["teacher_1", "teacher_2", "teacher_3"])
     
-    tab1, tab2, tab3 = st.tabs(["Dashboard", "Roadmap Reviews", "Student Progress"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Dashboard", "Roadmap Reviews", "Student Progress", "Conflict Resolution"])
     
     with tab1:
         st.subheader("Teacher Dashboard")
@@ -386,63 +448,238 @@ def show_teacher_interface():
         # Recent notifications
         st.subheader("Recent Notifications")
         notifications = [
-            "New roadmap requires review - Alice Johnson",
-            "Student performance alert - Bob Smith",
-            "Parent feedback received - Carol Davis",
-            "Weekly report available - David Wilson"
+            "🔴 New roadmap requires review - Alice Johnson",
+            "⚠️ Student performance alert - Bob Smith", 
+            "📝 Parent feedback received - Carol Davis",
+            "📊 Weekly report available - David Wilson",
+            "⚖️ Conflict detected - Math study hours - Emma Wilson"
         ]
         
         for notification in notifications:
             st.info(notification)
     
     with tab2:
-        st.subheader("Roadmap Reviews")
+        st.subheader("📋 Roadmap Review & Approval System")
         
-        # Pending reviews
-        st.write("**Pending Reviews:**")
-        pending_reviews = pd.DataFrame({
-            'Student': ['Alice Johnson', 'Bob Smith', 'Carol Davis'],
-            'Subject': ['Mathematics', 'Physics', 'Chemistry'],
-            'Submitted': ['2 hours ago', '1 day ago', '3 hours ago'],
-            'Priority': ['High', 'Medium', 'High']
+        # Get current roadmap for review
+        if 'current_roadmap' in st.session_state:
+            roadmap = st.session_state['current_roadmap']
+            student = st.session_state.get('current_student')
+            
+            st.write(f"**Reviewing Roadmap for: {student.name if student else 'Alex Johnson'}**")
+            
+            col1, col2 = st.columns([2, 1])
+            
+            with col1:
+                st.write("**Current Roadmap Structure:**")
+                
+                # Show weekly breakdown
+                for i, week in enumerate(roadmap.weekly_plans[:4]):  # Show first 4 weeks
+                    with st.expander(f"Week {week.week_number}: {week.start_date.strftime('%Y-%m-%d')} to {week.end_date.strftime('%Y-%m-%d')}"):
+                        st.write(f"**Total Hours: {week.total_hours}**")
+                        
+                        # Subject breakdown
+                        if hasattr(week, 'subject_breakdown') and week.subject_breakdown:
+                            for subject, hours in week.subject_breakdown.items():
+                                st.write(f"- {subject.value}: {hours} hours")
+                        
+                        # Key tasks
+                        st.write("**Key Tasks:**")
+                        for task in week.tasks[:3]:  # Show first 3 tasks
+                            st.write(f"• {task.title} ({task.subject.value}) - {task.priority.value.title()}")
+            
+            with col2:
+                st.write("**Review Actions:**")
+                
+                # Approval status
+                approval_status = st.selectbox("Approval Status", 
+                                             ["Pending Review", "Approved", "Needs Adjustment", "Rejected"],
+                                             key="teacher_approval")
+                
+                # Detailed feedback
+                st.write("**Feedback Categories:**")
+                
+                # Subject-specific feedback
+                math_feedback = st.text_area("Mathematics Feedback", 
+                                           placeholder="Comments on Math study plan...",
+                                           height=60)
+                
+                physics_feedback = st.text_area("Physics Feedback", 
+                                              placeholder="Comments on Physics study plan...",
+                                              height=60)
+                
+                chemistry_feedback = st.text_area("Chemistry Feedback", 
+                                                placeholder="Comments on Chemistry study plan...",
+                                                height=60)
+                
+                # Overall recommendations
+                overall_feedback = st.text_area("Overall Recommendations", 
+                                              placeholder="General feedback and suggestions...",
+                                              height=100)
+                
+                # Study hours adjustments
+                st.write("**Study Hours Adjustments:**")
+                math_adjustment = st.number_input("Math Hours Adjustment", 
+                                                min_value=-5.0, max_value=5.0, value=0.0, step=0.5,
+                                                help="Positive = increase hours, Negative = decrease hours")
+                
+                physics_adjustment = st.number_input("Physics Hours Adjustment", 
+                                                   min_value=-5.0, max_value=5.0, value=0.0, step=0.5)
+                
+                chemistry_adjustment = st.number_input("Chemistry Hours Adjustment", 
+                                                     min_value=-5.0, max_value=5.0, value=0.0, step=0.5)
+                
+                # Priority level
+                priority = st.selectbox("Review Priority", ["Low", "Medium", "High", "Urgent"])
+                
+                if st.button("Submit Review", type="primary"):
+                    # Store teacher feedback
+                    teacher_feedback = {
+                        'teacher_id': teacher_id,
+                        'approval_status': approval_status,
+                        'math_feedback': math_feedback,
+                        'physics_feedback': physics_feedback,
+                        'chemistry_feedback': chemistry_feedback,
+                        'overall_feedback': overall_feedback,
+                        'math_adjustment': math_adjustment,
+                        'physics_adjustment': physics_adjustment,
+                        'chemistry_adjustment': chemistry_adjustment,
+                        'priority': priority,
+                        'timestamp': datetime.now()
+                    }
+                    
+                    st.session_state['teacher_feedback'] = teacher_feedback
+                    st.success("✅ Review submitted successfully!")
+                    
+                    if approval_status == "Needs Adjustment":
+                        st.warning("⚠️ Roadmap flagged for adjustment. Student and parent will be notified.")
+                    elif approval_status == "Rejected":
+                        st.error("❌ Roadmap rejected. New roadmap generation required.")
+        else:
+            st.info("No roadmap available for review. Please generate a roadmap first.")
+    
+    with tab3:
+        st.subheader("📊 Student Progress Monitoring")
+        
+        # Student selection
+        student = st.selectbox("Select Student", ["Alex Johnson", "Alice Smith", "Bob Wilson"], key="teacher_student_select")
+        
+        # Progress metrics
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Completion Rate", "78%", "5%")
+        with col2:
+            st.metric("Adherence Rate", "85%", "2%")
+        with col3:
+            st.metric("Performance Trend", "↗️ Improving", "8%")
+        
+        # Performance chart
+        performance_data = pd.DataFrame({
+            'Week': [f"Week {i}" for i in range(1, 9)],
+            'Mathematics': [70, 72, 75, 78, 80, 82, 85, 87],
+            'Physics': [65, 67, 70, 72, 75, 77, 80, 82],
+            'Chemistry': [68, 70, 72, 74, 76, 78, 80, 82]
         })
         
-        for _, review in pending_reviews.iterrows():
-            with st.container():
-                col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
-                with col1:
-                    st.write(f"**{review['Student']}** - {review['Subject']}")
-                with col2:
-                    st.write(review['Submitted'])
-                with col3:
-                    if review['Priority'] == 'High':
-                        st.error(review['Priority'])
-                    else:
-                        st.warning(review['Priority'])
-                with col4:
-                    if st.button(f"Review", key=f"review_{review['Student']}"):
-                        st.success("Review opened!")
+        fig = px.line(performance_data, x='Week', y=['Mathematics', 'Physics', 'Chemistry'],
+                     title="Student Performance Over Time")
+        st.plotly_chart(fig, use_container_width=True)
         
-        # Feedback form
-        st.subheader("Submit Feedback")
-        with st.form("teacher_feedback"):
-            student = st.selectbox("Student", ["Alice Johnson", "Bob Smith", "Carol Davis"])
-            feedback_type = st.selectbox("Feedback Type", 
-                                       ["Roadmap Review", "Progress Assessment", "Recommendation"])
-            priority = st.selectbox("Priority", ["Low", "Medium", "High", "Critical"])
-            content = st.text_area("Feedback Content", height=100)
+        # Teacher interventions
+        st.subheader("🎯 Teacher Interventions")
+        
+        with st.form("teacher_intervention"):
+            intervention_type = st.selectbox("Intervention Type", 
+                                           ["Additional Support", "Schedule Adjustment", "Resource Recommendation", "Parent Meeting"])
+            subject = st.selectbox("Subject", ["Mathematics", "Physics", "Chemistry", "Biology", "English", "General"])
+            urgency = st.selectbox("Urgency", ["Low", "Medium", "High", "Urgent"])
+            description = st.text_area("Intervention Description", height=100)
             
-            if st.form_submit_button("Submit Feedback"):
-                st.success("Feedback submitted successfully!")
+            if st.form_submit_button("Submit Intervention"):
+                st.success("Intervention submitted successfully!")
+    
+    with tab4:
+        st.subheader("⚖️ Conflict Resolution")
+        
+        # Show conflicts between teacher and parent feedback
+        st.write("**Active Conflicts:**")
+        
+        conflicts = [
+            {
+                'student': 'Alex Johnson',
+                'subject': 'Mathematics',
+                'teacher_adjustment': '+2 hours',
+                'parent_adjustment': '-1 hour',
+                'status': 'Pending Resolution',
+                'conflict_type': 'Study Hours'
+            },
+            {
+                'student': 'Alice Smith', 
+                'subject': 'Physics',
+                'teacher_adjustment': 'Increase difficulty',
+                'parent_adjustment': 'Reduce workload',
+                'status': 'Resolved',
+                'conflict_type': 'Difficulty Level'
+            }
+        ]
+        
+        for conflict in conflicts:
+            with st.container():
+                col1, col2, col3 = st.columns([2, 2, 1])
+                
+                with col1:
+                    st.write(f"**{conflict['student']} - {conflict['subject']}**")
+                    st.write(f"Type: {conflict['conflict_type']}")
+                
+                with col2:
+                    st.write(f"Teacher: {conflict['teacher_adjustment']}")
+                    st.write(f"Parent: {conflict['parent_adjustment']}")
+                
+                with col3:
+                    if conflict['status'] == 'Pending Resolution':
+                        st.warning("⚠️ Pending")
+                        if st.button("Resolve", key=f"resolve_{conflict['student']}"):
+                            st.success("Conflict resolved!")
+                    else:
+                        st.success("✅ Resolved")
+                
+                st.divider()
+        
+        # Conflict resolution interface
+        st.subheader("🔧 Manual Conflict Resolution")
+        
+        with st.form("conflict_resolution"):
+            student_name = st.selectbox("Student", ["Alex Johnson", "Alice Smith", "Bob Wilson"], key="conflict_student")
+            conflict_subject = st.selectbox("Subject", ["Mathematics", "Physics", "Chemistry", "Biology", "English"])
+            
+            st.write("**Resolution Options:**")
+            resolution_type = st.radio("Resolution Type", 
+                                     ["Accept Teacher Recommendation", 
+                                      "Accept Parent Recommendation", 
+                                      "Compromise Solution", 
+                                      "Manual Override"])
+            
+            if resolution_type == "Compromise Solution":
+                compromise_hours = st.number_input("Compromise Study Hours", 
+                                                 min_value=0.0, max_value=10.0, value=2.0, step=0.5)
+                compromise_reason = st.text_area("Compromise Reasoning", height=80)
+            elif resolution_type == "Manual Override":
+                manual_hours = st.number_input("Manual Study Hours", 
+                                             min_value=0.0, max_value=10.0, value=2.0, step=0.5)
+                override_reason = st.text_area("Override Reasoning", height=80)
+            
+            if st.form_submit_button("Apply Resolution"):
+                st.success("Conflict resolution applied successfully!")
+                st.info("All parties will be notified of the resolution.")
 
 def show_parent_interface():
-    """Parent interface for monitoring and feedback"""
-    st.header("👨‍👩‍👧‍👦 Parent Interface")
+    """Enhanced Parent interface with HITL progress viewing and study hours adjustment"""
+    st.header("👨‍👩‍👧‍👦 Parent Interface - Human-in-the-Loop")
     
     # Parent login simulation
     parent_id = st.selectbox("Select Parent", ["parent_1", "parent_2", "parent_3"])
     
-    tab1, tab2, tab3 = st.tabs(["Dashboard", "Child Progress", "Feedback & Concerns"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Dashboard", "Child Progress", "Study Hours Adjustment", "Feedback & Concerns"])
     
     with tab1:
         st.subheader("Parent Dashboard")
@@ -459,19 +696,73 @@ def show_parent_interface():
         # Recent updates
         st.subheader("Recent Updates")
         updates = [
-            "Child completed Mathematics practice test - 85%",
-            "Teacher provided feedback on study schedule",
-            "Weekly progress report available",
-            "Upcoming exam reminder - Physics"
+            "📊 Child completed Mathematics practice test - 85%",
+            "👨‍🏫 Teacher provided feedback on study schedule",
+            "📋 Weekly progress report available",
+            "📅 Upcoming exam reminder - Physics",
+            "⚖️ Study hours conflict detected - Math subject"
         ]
         
         for update in updates:
             st.info(update)
     
     with tab2:
-        st.subheader("Child Progress Tracking")
+        st.subheader("📊 Child Progress Tracking")
+        
+        # Get current roadmap if available
+        if 'current_roadmap' in st.session_state:
+            roadmap = st.session_state['current_roadmap']
+            student = st.session_state.get('current_student')
+            
+            st.write(f"**Progress for: {student.name if student else 'Alex Johnson'}**")
+            
+            # Current week selection
+            current_week = st.slider("View Week", 1, roadmap.duration_weeks, 1, key="parent_week")
+            
+            if current_week <= len(roadmap.weekly_plans):
+                current_plan = roadmap.weekly_plans[current_week - 1]
+                
+                # Progress metrics
+                col1, col2, col3, col4 = st.columns(4)
+                
+                total_tasks = len(current_plan.tasks)
+                completed_tasks = len([t for t in current_plan.tasks if t.status.value == 'completed'])
+                pending_tasks = len([t for t in current_plan.tasks if t.status.value == 'pending'])
+                overdue_tasks = len([t for t in current_plan.tasks if t.status.value == 'overdue'])
+                
+                with col1:
+                    st.metric("Total Tasks", total_tasks)
+                with col2:
+                    st.metric("Completed", completed_tasks)
+                with col3:
+                    st.metric("Pending", pending_tasks)
+                with col4:
+                    if overdue_tasks > 0:
+                        st.metric("Overdue", overdue_tasks, delta=None, delta_color="inverse")
+                    else:
+                        st.metric("Overdue", overdue_tasks)
+                
+                # Progress visualization
+                completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+                st.progress(completion_rate / 100)
+                st.write(f"**Overall Completion Rate: {completion_rate:.1f}%**")
+                
+                # Subject breakdown
+                st.subheader("📚 Subject Breakdown")
+                if hasattr(current_plan, 'subject_breakdown') and current_plan.subject_breakdown:
+                    subject_data = []
+                    for subject, hours in current_plan.subject_breakdown.items():
+                        subject_data.append({
+                            'Subject': subject.value,
+                            'Study Hours': hours,
+                            'Completion': f"{completed_tasks}/{total_tasks}"
+                        })
+                    
+                    subject_df = pd.DataFrame(subject_data)
+                    st.dataframe(subject_df, use_container_width=True)
         
         # Progress chart
+        st.subheader("📈 Academic Progress Over Time")
         progress_data = pd.DataFrame({
             'Week': [f"Week {i}" for i in range(1, 9)],
             'Mathematics': [70, 72, 75, 78, 80, 82, 85, 87],
@@ -484,7 +775,7 @@ def show_parent_interface():
         st.plotly_chart(fig, use_container_width=True)
         
         # Study habits
-        st.subheader("Study Habits")
+        st.subheader("📅 Study Habits")
         habits_data = pd.DataFrame({
             'Day': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
             'Study Hours': [4, 3.5, 5, 4.5, 3, 2, 1],
@@ -496,18 +787,143 @@ def show_parent_interface():
         st.plotly_chart(fig2, use_container_width=True)
     
     with tab3:
-        st.subheader("Submit Feedback or Concerns")
+        st.subheader("⏰ Study Hours Adjustment")
+        
+        st.write("**Adjust your child's study hours for different subjects:**")
+        
+        # Get current roadmap for adjustment
+        if 'current_roadmap' in st.session_state:
+            roadmap = st.session_state['current_roadmap']
+            
+            with st.form("study_hours_adjustment"):
+                st.write("**Current Study Hours (per week):**")
+                
+                # Show current hours
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    current_math = st.number_input("Mathematics Hours", 
+                                                 min_value=0.0, max_value=20.0, value=8.0, step=0.5,
+                                                 help="Current: 8 hours/week")
+                    
+                    current_physics = st.number_input("Physics Hours", 
+                                                    min_value=0.0, max_value=20.0, value=6.0, step=0.5,
+                                                    help="Current: 6 hours/week")
+                
+                with col2:
+                    current_chemistry = st.number_input("Chemistry Hours", 
+                                                      min_value=0.0, max_value=20.0, value=5.0, step=0.5,
+                                                      help="Current: 5 hours/week")
+                    
+                    current_biology = st.number_input("Biology Hours", 
+                                                    min_value=0.0, max_value=20.0, value=4.0, step=0.5,
+                                                    help="Current: 4 hours/week")
+                
+                with col3:
+                    current_english = st.number_input("English Hours", 
+                                                    min_value=0.0, max_value=20.0, value=3.0, step=0.5,
+                                                    help="Current: 3 hours/week")
+                
+                # Adjustment reasoning
+                adjustment_reason = st.text_area("Reason for Adjustment", 
+                                               placeholder="Please explain why you want to adjust these study hours...",
+                                               height=100)
+                
+                # Priority level
+                priority = st.selectbox("Priority Level", ["Low", "Medium", "High", "Urgent"])
+                
+                if st.form_submit_button("Submit Study Hours Adjustment", type="primary"):
+                    # Store parent adjustment
+                    parent_adjustment = {
+                        'parent_id': parent_id,
+                        'math_hours': current_math,
+                        'physics_hours': current_physics,
+                        'chemistry_hours': current_chemistry,
+                        'biology_hours': current_biology,
+                        'english_hours': current_english,
+                        'reason': adjustment_reason,
+                        'priority': priority,
+                        'timestamp': datetime.now()
+                    }
+                    
+                    st.session_state['parent_adjustment'] = parent_adjustment
+                    st.success("✅ Study hours adjustment submitted successfully!")
+                    st.info("📧 Teacher will be notified and may need to approve the changes.")
+                    
+                    # Check for conflicts with teacher feedback
+                    if 'teacher_feedback' in st.session_state:
+                        teacher_feedback = st.session_state['teacher_feedback']
+                        
+                        # Simple conflict detection
+                        conflicts = []
+                        if abs(teacher_feedback.get('math_adjustment', 0) - (current_math - 8.0)) > 1.0:
+                            conflicts.append("Mathematics hours conflict detected")
+                        if abs(teacher_feedback.get('physics_adjustment', 0) - (current_physics - 6.0)) > 1.0:
+                            conflicts.append("Physics hours conflict detected")
+                        
+                        if conflicts:
+                            st.warning("⚠️ **Conflicts Detected:**")
+                            for conflict in conflicts:
+                                st.warning(f"- {conflict}")
+                            st.info("🔧 Manual resolution may be required.")
+        else:
+            st.info("No roadmap available. Please generate a roadmap first to adjust study hours.")
+    
+    with tab4:
+        st.subheader("💬 Feedback & Concerns")
         
         with st.form("parent_feedback"):
             concern_type = st.selectbox("Type", 
-                                      ["Observation", "Concern", "Suggestion", "Question"])
-            subject = st.selectbox("Subject", 
-                                 ["Mathematics", "Physics", "Chemistry", "Biology", "English", "General"])
-            priority = st.selectbox("Priority", ["Low", "Medium", "High", "Urgent"])
-            content = st.text_area("Your feedback or concern", height=100)
+                                      ["Observation", "Concern", "Suggestion", "Question", "Study Hours Request"],
+                                      help="Select the type of feedback you want to provide")
             
-            if st.form_submit_button("Submit"):
-                st.success("Your feedback has been submitted to the teacher!")
+            subject = st.selectbox("Subject", 
+                                 ["Mathematics", "Physics", "Chemistry", "Biology", "English", "General", "Study Schedule"])
+            
+            priority = st.selectbox("Priority", ["Low", "Medium", "High", "Urgent"])
+            
+            content = st.text_area("Your feedback or concern", 
+                                 placeholder="Please provide detailed feedback about your child's progress, concerns, or suggestions...",
+                                 height=120)
+            
+            # Additional options for study-related feedback
+            if concern_type == "Study Hours Request":
+                st.write("**Study Hours Adjustment Request:**")
+                col1, col2 = st.columns(2)
+                with col1:
+                    increase_subject = st.selectbox("Increase hours for", 
+                                                  ["Mathematics", "Physics", "Chemistry", "Biology", "English"])
+                    increase_hours = st.number_input("Additional hours", min_value=0.5, max_value=5.0, value=1.0, step=0.5)
+                
+                with col2:
+                    decrease_subject = st.selectbox("Decrease hours for", 
+                                                  ["None", "Mathematics", "Physics", "Chemistry", "Biology", "English"])
+                    if decrease_subject != "None":
+                        decrease_hours = st.number_input("Reduce hours", min_value=0.5, max_value=5.0, value=1.0, step=0.5)
+            
+            if st.form_submit_button("Submit Feedback", type="primary"):
+                st.success("✅ Your feedback has been submitted to the teacher!")
+                st.info("📧 You will receive a response within 2-3 business days.")
+                
+                # Store parent feedback
+                parent_feedback = {
+                    'parent_id': parent_id,
+                    'concern_type': concern_type,
+                    'subject': subject,
+                    'priority': priority,
+                    'content': content,
+                    'timestamp': datetime.now()
+                }
+                
+                if concern_type == "Study Hours Request":
+                    parent_feedback.update({
+                        'increase_subject': increase_subject,
+                        'increase_hours': increase_hours,
+                        'decrease_subject': decrease_subject,
+                        'decrease_hours': decrease_hours if decrease_subject != "None" else 0
+                    })
+                
+                st.session_state['parent_feedback'] = parent_feedback
 
 def show_monitoring_analytics():
     """Monitoring and analytics interface"""
@@ -781,6 +1197,279 @@ def show_email_management():
         if selected_template:
             st.write(f"**{selected_template} Template**")
             st.text_area("Template Content", f"Template content for {selected_template} would be displayed here", height=200)
+
+def show_student_progress_tracker():
+    """Student progress tracking interface with task completion and monitoring"""
+    st.header("📈 Student Progress Tracker")
+    
+    # Student selection
+    student_name = st.selectbox("Select Student", ["Alex Johnson", "Alice Smith", "Bob Wilson", "Carol Davis"])
+    
+    # Get or create roadmap for the student
+    if 'current_roadmap' not in st.session_state:
+        # Create a sample roadmap for demonstration
+        from src.ai_roadmap_generator import AIRoadmapGenerator
+        from src.data_models import StudentProfile, Subject
+        
+        # Create sample student
+        student = StudentProfile(
+            student_id="demo_student",
+            name=student_name,
+            age=16,
+            grade="11th",
+            target_scores={
+                Subject.MATHEMATICS: 85,
+                Subject.PHYSICS: 80,
+                Subject.CHEMISTRY: 80,
+                Subject.BIOLOGY: 75,
+                Subject.ENGLISH: 85
+            },
+            current_scores={
+                Subject.MATHEMATICS: 70,
+                Subject.PHYSICS: 65,
+                Subject.CHEMISTRY: 68,
+                Subject.BIOLOGY: 72,
+                Subject.ENGLISH: 75
+            },
+            learning_style="visual",
+            available_hours_per_day=4.0,
+            preferred_study_times=["morning", "evening"]
+        )
+        
+        # Generate roadmap
+        roadmap_generator = AIRoadmapGenerator()
+        roadmap = roadmap_generator.generate_roadmap(student, duration_weeks=12)
+        st.session_state['current_roadmap'] = roadmap
+        st.session_state['current_student'] = student
+    
+    roadmap = st.session_state['current_roadmap']
+    student = st.session_state['current_student']
+    
+    # Current week selection
+    current_week = st.slider("Current Week", 1, roadmap.duration_weeks, 1)
+    
+    if current_week <= len(roadmap.weekly_plans):
+        current_plan = roadmap.weekly_plans[current_week - 1]
+        
+        # Progress Overview
+        st.subheader(f"📊 Week {current_week} Progress Overview")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        total_tasks = len(current_plan.tasks)
+        completed_tasks = len([t for t in current_plan.tasks if t.status.value == 'completed'])
+        pending_tasks = len([t for t in current_plan.tasks if t.status.value == 'pending'])
+        overdue_tasks = len([t for t in current_plan.tasks if t.status.value == 'overdue'])
+        
+        with col1:
+            st.metric("Total Tasks", total_tasks)
+        with col2:
+            st.metric("Completed", completed_tasks, f"+{completed_tasks - pending_tasks}")
+        with col3:
+            st.metric("Pending", pending_tasks)
+        with col4:
+            if overdue_tasks > 0:
+                st.metric("Overdue", overdue_tasks, delta=None, delta_color="inverse")
+            else:
+                st.metric("Overdue", overdue_tasks)
+        
+        # Progress Visualization
+        st.subheader("📈 Progress Visualization")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Progress Bar
+            completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+            st.progress(completion_rate / 100)
+            st.write(f"**Completion Rate: {completion_rate:.1f}%**")
+        
+        with col2:
+            # Pie Chart
+            if total_tasks > 0:
+                import plotly.express as px
+                
+                task_data = {
+                    'Status': ['Completed', 'Pending', 'Overdue'],
+                    'Count': [completed_tasks, pending_tasks, overdue_tasks],
+                    'Color': ['#28a745', '#ffc107', '#dc3545']
+                }
+                
+                fig = px.pie(values=task_data['Count'], names=task_data['Status'], 
+                           title="Task Status Distribution",
+                           color_discrete_sequence=task_data['Color'])
+                st.plotly_chart(fig, use_container_width=True)
+        
+        # Task Management Interface
+        st.subheader("✅ Task Management")
+        
+        # Task completion interface
+        for i, task in enumerate(current_plan.tasks):
+            with st.container():
+                col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
+                
+                with col1:
+                    # Task details
+                    status_color = {
+                        'completed': '🟢',
+                        'pending': '🟡', 
+                        'overdue': '🔴',
+                        'in_progress': '🔵'
+                    }
+                    
+                    status_icon = status_color.get(task.status.value, '⚪')
+                    st.write(f"{status_icon} **{task.title}**")
+                    st.write(f"   Subject: {task.subject.value} | Priority: {task.priority.value.title()}")
+                    st.write(f"   Due: {task.due_date.strftime('%Y-%m-%d')}")
+                    
+                    if task.description:
+                        st.write(f"   Description: {task.description}")
+                
+                with col2:
+                    # Status selector
+                    new_status = st.selectbox(
+                        "Status", 
+                        ["pending", "in_progress", "completed", "overdue"],
+                        index=["pending", "in_progress", "completed", "overdue"].index(task.status.value),
+                        key=f"status_{i}"
+                    )
+                    
+                    if new_status != task.status.value:
+                        task.status = type(task.status)(new_status)
+                        st.rerun()
+                
+                with col3:
+                    # Time tracking
+                    if task.status.value == 'completed':
+                        actual_time = st.number_input(
+                            "Actual Time (min)", 
+                            min_value=1, 
+                            value=task.actual_duration or task.estimated_duration,
+                            key=f"time_{i}"
+                        )
+                        task.actual_duration = actual_time
+                
+                with col4:
+                    # Notes
+                    notes = st.text_area(
+                        "Notes", 
+                        value=task.notes or "",
+                        height=50,
+                        key=f"notes_{i}"
+                    )
+                    task.notes = notes
+                
+                st.divider()
+        
+        # Irregularity Detection
+        st.subheader("⚠️ Irregularity Detection")
+        
+        irregularities = []
+        warnings = []
+        
+        # Check for overdue tasks
+        if overdue_tasks > 0:
+            irregularities.append(f"🔴 {overdue_tasks} overdue tasks detected")
+        
+        # Check completion rate
+        if completion_rate < 70:
+            warnings.append(f"⚠️ Low completion rate: {completion_rate:.1f}% (below 70% threshold)")
+        
+        # Check for consistency issues
+        if pending_tasks >= 3:
+            warnings.append(f"⚠️ {pending_tasks} pending tasks - consider reviewing schedule")
+        
+        # Display irregularities and warnings
+        if irregularities:
+            for irregularity in irregularities:
+                st.error(irregularity)
+        
+        if warnings:
+            for warning in warnings:
+                st.warning(warning)
+        
+        if not irregularities and not warnings:
+            st.success("✅ No irregularities detected! Great progress!")
+        
+        # Weekly Report Generator
+        st.subheader("📋 Weekly Report Generator")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if st.button("📊 Generate Weekly Report", type="primary"):
+                # Generate monitoring report
+                from src.monitoring_agents import MonitoringSystem
+                
+                monitoring_system = MonitoringSystem()
+                report = monitoring_system.generate_weekly_report(student, roadmap, current_week)
+                
+                st.session_state['weekly_report'] = report
+                st.success("Weekly report generated successfully!")
+        
+        with col2:
+            if 'weekly_report' in st.session_state:
+                report = st.session_state['weekly_report']
+                
+                # Display report summary
+                st.write("**Report Summary:**")
+                st.write(f"- Tasks Completed: {report.tasks_completed}")
+                st.write(f"- Tasks Pending: {report.tasks_pending}")
+                st.write(f"- Adherence Rate: {report.adherence_rate:.1%}")
+                
+                if report.irregularities:
+                    st.write("**Irregularities:**")
+                    for irregularity in report.irregularities:
+                        st.write(f"- {irregularity}")
+                
+                # Download options
+                col_download1, col_download2 = st.columns(2)
+                
+                with col_download1:
+                    # CSV Download
+                    import io
+                    import csv
+                    
+                    csv_buffer = io.StringIO()
+                    writer = csv.writer(csv_buffer)
+                    
+                    # Write report data to CSV
+                    writer.writerow(['Metric', 'Value'])
+                    writer.writerow(['Week', current_week])
+                    writer.writerow(['Tasks Completed', report.tasks_completed])
+                    writer.writerow(['Tasks Pending', report.tasks_pending])
+                    writer.writerow(['Tasks Overdue', report.tasks_overdue])
+                    writer.writerow(['Adherence Rate', f"{report.adherence_rate:.1%}"])
+                    
+                    for i, irregularity in enumerate(report.irregularities):
+                        writer.writerow([f'Irregularity {i+1}', irregularity])
+                    
+                    csv_data = csv_buffer.getvalue()
+                    
+                    st.download_button(
+                        label="📄 Download CSV",
+                        data=csv_data,
+                        file_name=f"weekly_report_week_{current_week}.csv",
+                        mime="text/csv"
+                    )
+                
+                with col_download2:
+                    # PDF Download
+                    if st.button("📄 Download PDF"):
+                        # Generate PDF report
+                        from src.pdf_utils import generate_roadmap_pdf
+                        import io
+                        
+                        pdf_buffer = io.BytesIO()
+                        generate_roadmap_pdf(student, roadmap, pdf_buffer)
+                        pdf_buffer.seek(0)
+                        
+                        st.download_button(
+                            label="📄 Download PDF Report",
+                            data=pdf_buffer,
+                            file_name=f"weekly_report_week_{current_week}.pdf",
+                            mime="application/pdf"
+                        )
 
 if __name__ == "__main__":
     main()
