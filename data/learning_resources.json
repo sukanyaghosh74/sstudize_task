@@ -1,0 +1,57 @@
+[
+  {
+    "resource_id": "res_001",
+    "title": "Calculus Fundamentals Video Series",
+    "resource_type": "video",
+    "subject": "Mathematics",
+    "topic": "Calculus",
+    "difficulty_level": 7.0,
+    "estimated_time": 120,
+    "url": "https://example.com/calc-fundamentals",
+    "description": "Comprehensive video series covering calculus basics"
+  },
+  {
+    "resource_id": "res_002",
+    "title": "Physics Mechanics Practice Problems",
+    "resource_type": "practice_test",
+    "subject": "Physics",
+    "topic": "Mechanics",
+    "difficulty_level": 8.0,
+    "estimated_time": 90,
+    "url": "https://example.com/mechanics-problems",
+    "description": "Practice problems with detailed solutions"
+  },
+  {
+    "resource_id": "res_003",
+    "title": "Organic Chemistry Textbook",
+    "resource_type": "pdf",
+    "subject": "Chemistry",
+    "topic": "Organic Chemistry",
+    "difficulty_level": 8.5,
+    "estimated_time": 180,
+    "url": "https://example.com/org-chem-textbook",
+    "description": "Complete textbook on organic chemistry concepts"
+  },
+  {
+    "resource_id": "res_004",
+    "title": "Biology Cell Structure Interactive",
+    "resource_type": "interactive",
+    "subject": "Biology",
+    "topic": "Cell Biology",
+    "difficulty_level": 6.0,
+    "estimated_time": 60,
+    "url": "https://example.com/cell-structure",
+    "description": "Interactive 3D model of cell structure"
+  },
+  {
+    "resource_id": "res_005",
+    "title": "English Essay Writing Guide",
+    "resource_type": "pdf",
+    "subject": "English",
+    "topic": "Essay Writing",
+    "difficulty_level": 6.5,
+    "estimated_time": 45,
+    "url": "https://example.com/essay-guide",
+    "description": "Step-by-step guide for essay writing"
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "subject": "Mathematics",
+    "topic": "Calculus",
+    "frequency": 15,
+    "difficulty_level": 8.5,
+    "weightage": 25.0,
+    "last_asked": "2024-01-15T10:00:00"
+  },
+  {
+    "subject": "Mathematics", 
+    "topic": "Algebra",
+    "frequency": 12,
+    "difficulty_level": 7.0,
+    "weightage": 20.0,
+    "last_asked": "2024-01-15T10:00:00"
+  },
+  {
+    "subject": "Physics",
+    "topic": "Mechanics",
+    "frequency": 10,
+    "difficulty_level": 8.0,
+    "weightage": 30.0,
+    "last_asked": "2024-01-15T10:00:00"
+  },
+  {
+    "subject": "Physics",
+    "topic": "Thermodynamics", 
+    "frequency": 8,
+    "difficulty_level": 7.5,
+    "weightage": 20.0,
+    "last_asked": "2024-01-15T10:00:00"
+  },
+  {
+    "subject": "Chemistry",
+    "topic": "Organic Chemistry",
+    "frequency": 12,
+    "difficulty_level": 9.0,
+    "weightage": 35.0,
+    "last_asked": "2024-01-15T10:00:00"
+  },
+  {
+    "subject": "Chemistry",
+    "topic": "Physical Chemistry",
+    "frequency": 9,
+    "difficulty_level": 8.0,
+    "weightage": 25.0,
+    "last_asked": "2024-01-15T10:00:00"
+  }
+]
