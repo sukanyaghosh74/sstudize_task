@@ -10,6 +10,8 @@ from datetime import datetime, timedelta
 import json
 import uuid
 from typing import Dict, List, Optional
+import io
+from src.pdf_utils import generate_roadmap_pdf
 
 # Import our modules
 import sys
@@ -288,68 +290,77 @@ def show_roadmap_generator():
     
     with col1:
         st.subheader("Configuration")
-        
-        # Student selection
-        student_id = st.selectbox("Select Student", ["student_1", "student_2", "student_3"])
-        
-        # Roadmap parameters
+        # Student selection and input fields
+        name = st.text_input("Student Name", value="Alex Johnson")
+        age = st.number_input("Age", min_value=10, max_value=25, value=16)
+        grade = st.selectbox("Grade", ["9th", "10th", "11th", "12th", "College"], index=2)
+        learning_style = st.selectbox("Learning Style", ["Visual", "Auditory", "Kinesthetic", "Reading"])
+        available_hours = st.slider("Available Study Hours/Day", 1.0, 8.0, 4.0)
+        preferred_times = st.multiselect("Preferred Study Times", ["Morning", "Afternoon", "Evening", "Night"], default=["Morning", "Evening"])
+        # Target scores
+        math_target = st.number_input("Mathematics Target", min_value=0, max_value=100, value=85)
+        physics_target = st.number_input("Physics Target", min_value=0, max_value=100, value=80)
+        chemistry_target = st.number_input("Chemistry Target", min_value=0, max_value=100, value=80)
+        biology_target = st.number_input("Biology Target", min_value=0, max_value=100, value=75)
+        english_target = st.number_input("English Target", min_value=0, max_value=100, value=85)
         duration_weeks = st.slider("Roadmap Duration (weeks)", 4, 16, 12)
-        
-        # Advanced options
-        with st.expander("Advanced Options"):
-            focus_subjects = st.multiselect("Focus Subjects", 
-                                          ["Mathematics", "Physics", "Chemistry", "Biology", "English"])
-            difficulty_level = st.select_slider("Difficulty Level", 
-                                              options=["Beginner", "Intermediate", "Advanced"], 
-                                              value="Intermediate")
-            study_intensity = st.select_slider("Study Intensity", 
-                                            options=["Light", "Moderate", "Intensive"], 
-                                            value="Moderate")
         
         if st.button("Generate Roadmap", type="primary"):
             with st.spinner("Generating personalized roadmap..."):
-                # Simulate roadmap generation
-                import time
-                time.sleep(2)
+                # Create student profile
+                student = StudentProfile(
+                    student_id="student_demo",
+                    name=name,
+                    age=age,
+                    grade=grade,
+                    target_scores={
+                        Subject.MATHEMATICS: math_target,
+                        Subject.PHYSICS: physics_target,
+                        Subject.CHEMISTRY: chemistry_target,
+                        Subject.BIOLOGY: biology_target,
+                        Subject.ENGLISH: english_target
+                    },
+                    current_scores={
+                        Subject.MATHEMATICS: 70,
+                        Subject.PHYSICS: 65,
+                        Subject.CHEMISTRY: 68,
+                        Subject.BIOLOGY: 72,
+                        Subject.ENGLISH: 75
+                    },
+                    learning_style=learning_style.lower(),
+                    available_hours_per_day=available_hours,
+                    preferred_study_times=preferred_times
+                )
+                # Generate roadmap
+                roadmap = st.session_state.roadmap_generator.generate_roadmap(student, duration_weeks=duration_weeks)
+                # Store in session
+                st.session_state['roadmap_obj'] = roadmap
+                st.session_state['roadmap_student'] = student
                 st.success("Roadmap generated successfully!")
     
     with col2:
         st.subheader("Generated Roadmap Preview")
-        
-        # Sample roadmap data
-        roadmap_data = pd.DataFrame({
-            'Week': [f"Week {i}" for i in range(1, 13)],
-            'Mathematics': [4, 4, 3, 4, 3, 4, 4, 3, 4, 3, 4, 4],
-            'Physics': [3, 3, 4, 3, 4, 3, 3, 4, 3, 4, 3, 3],
-            'Chemistry': [2, 2, 2, 3, 2, 2, 3, 2, 2, 3, 2, 2],
-            'Biology': [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            'English': [2, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, 2]
-        })
-        
-        # Create heatmap
-        fig = px.imshow(roadmap_data.set_index('Week').T, 
-                       aspect="auto", 
-                       title="Weekly Study Hours Distribution",
-                       color_continuous_scale="Blues")
-        st.plotly_chart(fig, use_container_width=True)
-        
-        # Weekly breakdown
-        st.subheader("Week 1 Detailed Plan")
-        week1_tasks = pd.DataFrame({
-            'Task': [
-                'Calculus Fundamentals - Video Study',
-                'Mechanics Problems - Practice',
-                'Organic Chemistry - Reading',
-                'Essay Writing - Practice',
-                'Biology Review - Notes'
-            ],
-            'Subject': ['Mathematics', 'Physics', 'Chemistry', 'English', 'Biology'],
-            'Duration (hrs)': [2, 1.5, 1, 1, 0.5],
-            'Priority': ['High', 'High', 'Medium', 'Medium', 'Low'],
-            'Due Date': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
-        })
-        
-        st.dataframe(week1_tasks, use_container_width=True)
+        roadmap = st.session_state.get('roadmap_obj')
+        student = st.session_state.get('roadmap_student')
+        if roadmap and student:
+            # Show a summary (optional)
+            st.write(f"**Student:** {student.name} | **Grade:** {student.grade}")
+            st.write(f"**Duration:** {roadmap.duration_weeks} weeks")
+            st.write("**Overall Goals:**")
+            for goal in getattr(roadmap, 'overall_goals', []):
+                st.write(f"- {goal}")
+            # PDF download
+            pdf_buffer = io.BytesIO()
+            generate_roadmap_pdf(student, roadmap, filename_or_buffer=pdf_buffer)
+            pdf_buffer.seek(0)
+            st.download_button(
+                label="Download Roadmap as PDF",
+                data=pdf_buffer,
+                file_name=f"{student.name}_roadmap.pdf",
+                mime="application/pdf"
+            )
+        else:
+            st.info("No roadmap object found. Please generate a roadmap first.")
 
 def show_teacher_interface():
     """Teacher interface for feedback and oversight"""

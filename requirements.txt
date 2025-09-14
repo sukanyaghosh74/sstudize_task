@@ -14,3 +14,4 @@ cryptography>=41.0.0
 # Additional utilities
 python-dateutil>=2.8.0
 pyjwt>=2.8.0
+fpdf>=1.7.2
