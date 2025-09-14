@@ -112,14 +112,16 @@ def main():
         navigation_options = [
             "🏠 My Dashboard",
             "🤖 My Roadmap",
-            "📈 My Progress Tracker"
+            "📈 My Progress Tracker",
+            "🎯 Generate New Roadmap"
         ]
     elif user_role == 'teacher':
         navigation_options = [
             "🏠 Teacher Dashboard",
             "📋 Roadmap Reviews",
             "📊 Student Progress",
-            "⚖️ Conflict Resolution"
+            "⚖️ Conflict Resolution",
+            "🎯 Generate Roadmap for Student"
         ]
     elif user_role == 'parent':
         navigation_options = [
@@ -136,7 +138,8 @@ def main():
             "🔧 Data Integration",
             "📧 Email Management",
             "📊 System Analytics",
-            "🏗️ System Architecture"
+            "🏗️ System Architecture",
+            "🎯 AI Roadmap Generator"
         ]
     else:
         # Fallback for unknown roles
@@ -175,6 +178,8 @@ def main():
             show_student_roadmap()
         elif page == "📈 My Progress Tracker":
             show_student_progress_tracker()
+        elif page == "🎯 Generate New Roadmap":
+            show_roadmap_generator()
     
     elif user_role == 'teacher':
         if page == "🏠 Teacher Dashboard":
@@ -185,6 +190,8 @@ def main():
             show_teacher_student_progress()
         elif page == "⚖️ Conflict Resolution":
             show_teacher_conflict_resolution()
+        elif page == "🎯 Generate Roadmap for Student":
+            show_roadmap_generator()
     
     elif user_role == 'parent':
         if page == "🏠 Parent Dashboard":
@@ -211,6 +218,8 @@ def main():
             show_monitoring_analytics()
         elif page == "🏗️ System Architecture":
             show_system_architecture()
+        elif page == "🎯 AI Roadmap Generator":
+            show_roadmap_generator()
     
     # Fallback for legacy pages (for development/testing)
     else:
