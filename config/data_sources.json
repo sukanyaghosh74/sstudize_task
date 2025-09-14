@@ -1,0 +1,26 @@
+{
+  "data_sources": [
+    {
+      "type": "database",
+      "name": "School Database",
+      "config": {
+        "school_id": "demo_school",
+        "api_base_url": "",
+        "api_key": "",
+        "database_connection": "data/school_demo.db",
+        "sync_interval_hours": 24
+      }
+    },
+    {
+      "type": "api",
+      "name": "School API",
+      "config": {
+        "school_id": "api_school",
+        "api_base_url": "https://api.school.edu",
+        "api_key": "your_api_key",
+        "database_connection": "",
+        "sync_interval_hours": 12
+      }
+    }
+  ]
+}

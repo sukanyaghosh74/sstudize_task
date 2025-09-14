@@ -1,0 +1,11 @@
+{
+  "db_type": "postgresql",
+  "host": "localhost",
+  "port": 5432,
+  "database": "roadmap_system",
+  "username": "roadmap_user",
+  "password": "roadmap_password",
+  "ssl_mode": "prefer",
+  "connection_pool_size": 10,
+  "max_overflow": 20
+}
