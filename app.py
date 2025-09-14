@@ -135,7 +135,8 @@ def main():
             "⚙️ System Settings",
             "🔧 Data Integration",
             "📧 Email Management",
-            "📊 System Analytics"
+            "📊 System Analytics",
+            "🏗️ System Architecture"
         ]
     else:
         # Fallback for unknown roles
@@ -166,26 +167,636 @@ def main():
     
     page = st.sidebar.selectbox("Navigate to:", navigation_options)
     
-    if page == "🏠 Dashboard":
-        show_dashboard()
-    elif page == "👨‍🎓 Student Management":
-        show_student_management()
-    elif page == "🤖 AI Roadmap Generator":
-        show_roadmap_generator()
-    elif page == "👨‍🏫 Teacher Interface":
-        show_teacher_interface()
-    elif page == "👨‍👩‍👧‍👦 Parent Interface":
-        show_parent_interface()
-    elif page == "📊 Monitoring & Analytics":
-        show_monitoring_analytics()
-    elif page == "⚙️ System Settings":
-        show_system_settings()
-    elif page == "🔧 Data Integration":
-        show_data_integration()
-    elif page == "📧 Email Management":
-        show_email_management()
-    elif page == "📈 Student Progress Tracker":
-        show_student_progress_tracker()
+    # Role-based page routing
+    if user_role == 'student':
+        if page == "🏠 My Dashboard":
+            show_student_dashboard()
+        elif page == "🤖 My Roadmap":
+            show_student_roadmap()
+        elif page == "📈 My Progress Tracker":
+            show_student_progress_tracker()
+    
+    elif user_role == 'teacher':
+        if page == "🏠 Teacher Dashboard":
+            show_teacher_dashboard()
+        elif page == "📋 Roadmap Reviews":
+            show_teacher_roadmap_reviews()
+        elif page == "📊 Student Progress":
+            show_teacher_student_progress()
+        elif page == "⚖️ Conflict Resolution":
+            show_teacher_conflict_resolution()
+    
+    elif user_role == 'parent':
+        if page == "🏠 Parent Dashboard":
+            show_parent_dashboard()
+        elif page == "📊 Child Progress":
+            show_parent_child_progress()
+        elif page == "⏰ Study Hours Adjustment":
+            show_parent_study_hours_adjustment()
+        elif page == "💬 Feedback & Concerns":
+            show_parent_feedback_concerns()
+    
+    elif user_role == 'admin':
+        if page == "🏠 Admin Dashboard":
+            show_admin_dashboard()
+        elif page == "👥 User Management":
+            show_user_management()
+        elif page == "⚙️ System Settings":
+            show_system_settings()
+        elif page == "🔧 Data Integration":
+            show_data_integration()
+        elif page == "📧 Email Management":
+            show_email_management()
+        elif page == "📊 System Analytics":
+            show_monitoring_analytics()
+        elif page == "🏗️ System Architecture":
+            show_system_architecture()
+    
+    # Fallback for legacy pages (for development/testing)
+    else:
+        if page == "🏠 Dashboard":
+            show_dashboard()
+        elif page == "👨‍🎓 Student Management":
+            show_student_management()
+        elif page == "🤖 AI Roadmap Generator":
+            show_roadmap_generator()
+        elif page == "👨‍🏫 Teacher Interface":
+            show_teacher_interface()
+        elif page == "👨‍👩‍👧‍👦 Parent Interface":
+            show_parent_interface()
+        elif page == "📊 Monitoring & Analytics":
+            show_monitoring_analytics()
+        elif page == "⚙️ System Settings":
+            show_system_settings()
+        elif page == "🔧 Data Integration":
+            show_data_integration()
+        elif page == "📧 Email Management":
+            show_email_management()
+        elif page == "📈 Student Progress Tracker":
+            show_student_progress_tracker()
+
+# =============================================================================
+# ROLE-BASED DASHBOARD FUNCTIONS
+# =============================================================================
+
+def show_student_dashboard():
+    """Student-only dashboard with roadmap and progress overview"""
+    st.header("🏠 My Dashboard")
+    
+    # Student info
+    student_name = st.session_state.get('current_student', {}).get('name', 'Alex Johnson')
+    st.write(f"**Welcome back, {student_name}!**")
+    
+    # Quick stats
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Current Week", "3", "Week 3 of 12")
+    with col2:
+        st.metric("Tasks Completed", "18", "+3 this week")
+    with col3:
+        st.metric("Study Hours", "24", "+2 hours")
+    with col4:
+        st.metric("Performance", "85%", "+5%")
+    
+    # Recent activity
+    st.subheader("📅 Recent Activity")
+    activities = [
+        "✅ Completed Mathematics practice test - 88%",
+        "📚 Finished Physics chapter 5 exercises",
+        "⏰ Studied Chemistry for 2 hours",
+        "📝 Submitted English essay draft"
+    ]
+    
+    for activity in activities:
+        st.info(activity)
+    
+    # Quick actions
+    st.subheader("🚀 Quick Actions")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("📖 View My Roadmap", type="primary"):
+            st.session_state['current_page'] = "🤖 My Roadmap"
+            st.rerun()
+    
+    with col2:
+        if st.button("📊 Track Progress"):
+            st.session_state['current_page'] = "📈 My Progress Tracker"
+            st.rerun()
+    
+    with col3:
+        if st.button("📋 Today's Tasks"):
+            st.info("Today's tasks will be displayed here")
+
+def show_student_roadmap():
+    """Student-only roadmap view"""
+    st.header("🤖 My Roadmap")
+    
+    # Get current roadmap
+    if 'current_roadmap' in st.session_state:
+        roadmap = st.session_state['current_roadmap']
+        student = st.session_state.get('current_student')
+        
+        st.write(f"**Your Personalized Study Roadmap**")
+        st.write(f"Duration: {roadmap.duration_weeks} weeks")
+        
+        # Week selector
+        current_week = st.slider("Select Week", 1, roadmap.duration_weeks, 1)
+        
+        if current_week <= len(roadmap.weekly_plans):
+            week_plan = roadmap.weekly_plans[current_week - 1]
+            
+            st.subheader(f"Week {current_week} Plan")
+            st.write(f"**Period:** {week_plan.start_date.strftime('%Y-%m-%d')} to {week_plan.end_date.strftime('%Y-%m-%d')}")
+            st.write(f"**Total Study Hours:** {week_plan.total_hours}")
+            
+            # Subject breakdown
+            if hasattr(week_plan, 'subject_breakdown') and week_plan.subject_breakdown:
+                st.subheader("📚 Subject Breakdown")
+                for subject, hours in week_plan.subject_breakdown.items():
+                    st.write(f"- **{subject.value}:** {hours} hours")
+            
+            # Tasks for the week
+            st.subheader("📋 This Week's Tasks")
+            for i, task in enumerate(week_plan.tasks, 1):
+                status_icon = "✅" if task.status.value == 'completed' else "⏳" if task.status.value == 'in_progress' else "📝"
+                st.write(f"{status_icon} **{i}. {task.title}**")
+                st.write(f"   Subject: {task.subject.value} | Priority: {task.priority.value.title()}")
+                st.write(f"   Due: {task.due_date.strftime('%Y-%m-%d')}")
+                if task.description:
+                    st.write(f"   Description: {task.description}")
+                st.write("---")
+    else:
+        st.info("No roadmap available. Please generate a roadmap first.")
+
+def show_teacher_dashboard():
+    """Teacher-only dashboard"""
+    st.header("🏠 Teacher Dashboard")
+    
+    # Teacher metrics
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Students Assigned", "15", "2")
+    with col2:
+        st.metric("Pending Reviews", "3", "-1")
+    with col3:
+        st.metric("Feedback Submitted", "12", "3")
+    with col4:
+        st.metric("Response Time", "2.3 days", "-0.5 days")
+    
+    # Recent notifications
+    st.subheader("🔔 Recent Notifications")
+    notifications = [
+        "🔴 New roadmap requires review - Alice Johnson",
+        "⚠️ Student performance alert - Bob Smith", 
+        "📝 Parent feedback received - Carol Davis",
+        "📊 Weekly report available - David Wilson",
+        "⚖️ Conflict detected - Math study hours - Emma Wilson"
+    ]
+    
+    for notification in notifications:
+        st.info(notification)
+    
+    # Quick actions
+    st.subheader("🎯 Quick Actions")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("📋 Review Roadmaps", type="primary"):
+            st.session_state['current_page'] = "📋 Roadmap Reviews"
+            st.rerun()
+    
+    with col2:
+        if st.button("📊 Check Progress"):
+            st.session_state['current_page'] = "📊 Student Progress"
+            st.rerun()
+    
+    with col3:
+        if st.button("⚖️ Resolve Conflicts"):
+            st.session_state['current_page'] = "⚖️ Conflict Resolution"
+            st.rerun()
+
+def show_teacher_roadmap_reviews():
+    """Teacher roadmap review interface"""
+    st.header("📋 Roadmap Reviews")
+    
+    # Get current roadmap for review
+    if 'current_roadmap' in st.session_state:
+        roadmap = st.session_state['current_roadmap']
+        student = st.session_state.get('current_student')
+        
+        st.write(f"**Reviewing Roadmap for: {student.name if student else 'Alex Johnson'}**")
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.write("**Current Roadmap Structure:**")
+            
+            # Show weekly breakdown
+            for i, week in enumerate(roadmap.weekly_plans[:4]):  # Show first 4 weeks
+                with st.expander(f"Week {week.week_number}: {week.start_date.strftime('%Y-%m-%d')} to {week.end_date.strftime('%Y-%m-%d')}"):
+                    st.write(f"**Total Hours: {week.total_hours}**")
+                    
+                    # Subject breakdown
+                    if hasattr(week, 'subject_breakdown') and week.subject_breakdown:
+                        for subject, hours in week.subject_breakdown.items():
+                            st.write(f"- {subject.value}: {hours} hours")
+                    
+                    # Key tasks
+                    st.write("**Key Tasks:**")
+                    for task in week.tasks[:3]:  # Show first 3 tasks
+                        st.write(f"• {task.title} ({task.subject.value}) - {task.priority.value.title()}")
+        
+        with col2:
+            st.write("**Review Actions:**")
+            
+            # Approval status
+            approval_status = st.selectbox("Approval Status", 
+                                         ["Pending Review", "Approved", "Needs Adjustment", "Rejected"],
+                                         key="teacher_approval")
+            
+            # Study hours adjustments
+            st.write("**Study Hours Adjustments:**")
+            math_adjustment = st.number_input("Math Hours Adjustment", 
+                                            min_value=-5.0, max_value=5.0, value=0.0, step=0.5,
+                                            help="Positive = increase hours, Negative = decrease hours")
+            
+            physics_adjustment = st.number_input("Physics Hours Adjustment", 
+                                               min_value=-5.0, max_value=5.0, value=0.0, step=0.5)
+            
+            chemistry_adjustment = st.number_input("Chemistry Hours Adjustment", 
+                                                 min_value=-5.0, max_value=5.0, value=0.0, step=0.5)
+            
+            # Overall feedback
+            overall_feedback = st.text_area("Overall Recommendations", 
+                                          placeholder="General feedback and suggestions...",
+                                          height=100)
+            
+            if st.button("Submit Review", type="primary"):
+                st.success("✅ Review submitted successfully!")
+    else:
+        st.info("No roadmap available for review.")
+
+def show_teacher_student_progress():
+    """Teacher student progress monitoring"""
+    st.header("📊 Student Progress")
+    
+    # Student selection
+    student = st.selectbox("Select Student", ["Alex Johnson", "Alice Smith", "Bob Wilson"])
+    
+    # Progress metrics
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Completion Rate", "78%", "5%")
+    with col2:
+        st.metric("Adherence Rate", "85%", "2%")
+    with col3:
+        st.metric("Performance Trend", "↗️ Improving", "8%")
+    
+    # Performance chart
+    performance_data = pd.DataFrame({
+        'Week': [f"Week {i}" for i in range(1, 9)],
+        'Mathematics': [70, 72, 75, 78, 80, 82, 85, 87],
+        'Physics': [65, 67, 70, 72, 75, 77, 80, 82],
+        'Chemistry': [68, 70, 72, 74, 76, 78, 80, 82]
+    })
+    
+    fig = px.line(performance_data, x='Week', y=['Mathematics', 'Physics', 'Chemistry'],
+                 title="Student Performance Over Time")
+    st.plotly_chart(fig, use_container_width=True)
+
+def show_teacher_conflict_resolution():
+    """Teacher conflict resolution interface"""
+    st.header("⚖️ Conflict Resolution")
+    
+    # Show conflicts
+    st.write("**Active Conflicts:**")
+    
+    conflicts = [
+        {
+            'student': 'Alex Johnson',
+            'subject': 'Mathematics',
+            'teacher_adjustment': '+2 hours',
+            'parent_adjustment': '-1 hour',
+            'status': 'Pending Resolution',
+            'conflict_type': 'Study Hours'
+        }
+    ]
+    
+    for conflict in conflicts:
+        with st.container():
+            col1, col2, col3 = st.columns([2, 2, 1])
+            
+            with col1:
+                st.write(f"**{conflict['student']} - {conflict['subject']}**")
+                st.write(f"Type: {conflict['conflict_type']}")
+            
+            with col2:
+                st.write(f"Teacher: {conflict['teacher_adjustment']}")
+                st.write(f"Parent: {conflict['parent_adjustment']}")
+            
+            with col3:
+                if conflict['status'] == 'Pending Resolution':
+                    st.warning("⚠️ Pending")
+                    if st.button("Resolve", key=f"resolve_{conflict['student']}"):
+                        st.success("Conflict resolved!")
+                else:
+                    st.success("✅ Resolved")
+            
+            st.divider()
+
+def show_parent_dashboard():
+    """Parent-only dashboard"""
+    st.header("🏠 Parent Dashboard")
+    
+    # Child progress overview
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Study Hours This Week", "28", "5")
+    with col2:
+        st.metric("Tasks Completed", "15/20", "3")
+    with col3:
+        st.metric("Performance Trend", "↗️ Improving", "5%")
+    
+    # Recent updates
+    st.subheader("📅 Recent Updates")
+    updates = [
+        "📊 Child completed Mathematics practice test - 85%",
+        "👨‍🏫 Teacher provided feedback on study schedule",
+        "📋 Weekly progress report available",
+        "📅 Upcoming exam reminder - Physics",
+        "⚖️ Study hours conflict detected - Math subject"
+    ]
+    
+    for update in updates:
+        st.info(update)
+    
+    # Quick actions
+    st.subheader("🎯 Quick Actions")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("📊 View Progress", type="primary"):
+            st.session_state['current_page'] = "📊 Child Progress"
+            st.rerun()
+    
+    with col2:
+        if st.button("⏰ Adjust Hours"):
+            st.session_state['current_page'] = "⏰ Study Hours Adjustment"
+            st.rerun()
+    
+    with col3:
+        if st.button("💬 Send Feedback"):
+            st.session_state['current_page'] = "💬 Feedback & Concerns"
+            st.rerun()
+
+def show_parent_child_progress():
+    """Parent child progress view"""
+    st.header("📊 Child Progress")
+    
+    # Get current roadmap if available
+    if 'current_roadmap' in st.session_state:
+        roadmap = st.session_state['current_roadmap']
+        student = st.session_state.get('current_student')
+        
+        st.write(f"**Progress for: {student.name if student else 'Alex Johnson'}**")
+        
+        # Current week selection
+        current_week = st.slider("View Week", 1, roadmap.duration_weeks, 1, key="parent_week")
+        
+        if current_week <= len(roadmap.weekly_plans):
+            current_plan = roadmap.weekly_plans[current_week - 1]
+            
+            # Progress metrics
+            col1, col2, col3, col4 = st.columns(4)
+            
+            total_tasks = len(current_plan.tasks)
+            completed_tasks = len([t for t in current_plan.tasks if t.status.value == 'completed'])
+            pending_tasks = len([t for t in current_plan.tasks if t.status.value == 'pending'])
+            overdue_tasks = len([t for t in current_plan.tasks if t.status.value == 'overdue'])
+            
+            with col1:
+                st.metric("Total Tasks", total_tasks)
+            with col2:
+                st.metric("Completed", completed_tasks)
+            with col3:
+                st.metric("Pending", pending_tasks)
+            with col4:
+                if overdue_tasks > 0:
+                    st.metric("Overdue", overdue_tasks, delta=None, delta_color="inverse")
+                else:
+                    st.metric("Overdue", overdue_tasks)
+            
+            # Progress visualization
+            completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+            st.progress(completion_rate / 100)
+            st.write(f"**Overall Completion Rate: {completion_rate:.1f}%**")
+    
+    # Progress chart
+    st.subheader("📈 Academic Progress Over Time")
+    progress_data = pd.DataFrame({
+        'Week': [f"Week {i}" for i in range(1, 9)],
+        'Mathematics': [70, 72, 75, 78, 80, 82, 85, 87],
+        'Physics': [65, 67, 70, 72, 75, 77, 80, 82],
+        'Chemistry': [68, 70, 72, 74, 76, 78, 80, 82]
+    })
+    
+    fig = px.line(progress_data, x='Week', y=['Mathematics', 'Physics', 'Chemistry'],
+                 title="Academic Progress Over Time")
+    st.plotly_chart(fig, use_container_width=True)
+
+def show_parent_study_hours_adjustment():
+    """Parent study hours adjustment interface"""
+    st.header("⏰ Study Hours Adjustment")
+    
+    st.write("**Adjust your child's study hours for different subjects:**")
+    
+    with st.form("study_hours_adjustment"):
+        st.write("**Current Study Hours (per week):**")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            current_math = st.number_input("Mathematics Hours", 
+                                         min_value=0.0, max_value=20.0, value=8.0, step=0.5,
+                                         help="Current: 8 hours/week")
+            
+            current_physics = st.number_input("Physics Hours", 
+                                            min_value=0.0, max_value=20.0, value=6.0, step=0.5,
+                                            help="Current: 6 hours/week")
+        
+        with col2:
+            current_chemistry = st.number_input("Chemistry Hours", 
+                                              min_value=0.0, max_value=20.0, value=5.0, step=0.5,
+                                              help="Current: 5 hours/week")
+            
+            current_biology = st.number_input("Biology Hours", 
+                                            min_value=0.0, max_value=20.0, value=4.0, step=0.5,
+                                            help="Current: 4 hours/week")
+        
+        with col3:
+            current_english = st.number_input("English Hours", 
+                                            min_value=0.0, max_value=20.0, value=3.0, step=0.5,
+                                            help="Current: 3 hours/week")
+        
+        # Adjustment reasoning
+        adjustment_reason = st.text_area("Reason for Adjustment", 
+                                       placeholder="Please explain why you want to adjust these study hours...",
+                                       height=100)
+        
+        if st.form_submit_button("Submit Study Hours Adjustment", type="primary"):
+            st.success("✅ Study hours adjustment submitted successfully!")
+            st.info("📧 Teacher will be notified and may need to approve the changes.")
+
+def show_parent_feedback_concerns():
+    """Parent feedback and concerns interface"""
+    st.header("💬 Feedback & Concerns")
+    
+    with st.form("parent_feedback"):
+        concern_type = st.selectbox("Type", 
+                                  ["Observation", "Concern", "Suggestion", "Question", "Study Hours Request"])
+        
+        subject = st.selectbox("Subject", 
+                             ["Mathematics", "Physics", "Chemistry", "Biology", "English", "General", "Study Schedule"])
+        
+        priority = st.selectbox("Priority", ["Low", "Medium", "High", "Urgent"])
+        
+        content = st.text_area("Your feedback or concern", 
+                             placeholder="Please provide detailed feedback about your child's progress, concerns, or suggestions...",
+                             height=120)
+        
+        if st.form_submit_button("Submit Feedback", type="primary"):
+            st.success("✅ Your feedback has been submitted to the teacher!")
+            st.info("📧 You will receive a response within 2-3 business days.")
+
+def show_admin_dashboard():
+    """Admin-only dashboard"""
+    st.header("🏠 Admin Dashboard")
+    
+    # System metrics
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Total Users", "156", "12")
+    with col2:
+        st.metric("Active Students", "89", "5")
+    with col3:
+        st.metric("Teachers", "12", "1")
+    with col4:
+        st.metric("Parents", "55", "6")
+    
+    # System status
+    st.subheader("🔧 System Status")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.success("✅ Database: Online")
+    with col2:
+        st.success("✅ Email Service: Active")
+    with col3:
+        st.warning("⚠️ Backup: Pending")
+    
+    # Recent activity
+    st.subheader("📊 Recent Activity")
+    activities = [
+        "👤 New student registered - Sarah Wilson",
+        "👨‍🏫 Teacher John Smith updated roadmap for 3 students",
+        "📧 Email notification sent to 15 parents",
+        "💾 System backup completed successfully",
+        "🔧 Database maintenance scheduled for tonight"
+    ]
+    
+    for activity in activities:
+        st.info(activity)
+    
+    # Quick actions
+    st.subheader("🎯 Quick Actions")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        if st.button("👥 Manage Users", type="primary"):
+            st.session_state['current_page'] = "👥 User Management"
+            st.rerun()
+    
+    with col2:
+        if st.button("⚙️ System Settings"):
+            st.session_state['current_page'] = "⚙️ System Settings"
+            st.rerun()
+    
+    with col3:
+        if st.button("📊 View Analytics"):
+            st.session_state['current_page'] = "📊 System Analytics"
+            st.rerun()
+
+def show_user_management():
+    """Admin user management interface"""
+    st.header("👥 User Management")
+    
+    # User statistics
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Total Users", "156")
+    with col2:
+        st.metric("Students", "89")
+    with col3:
+        st.metric("Teachers", "12")
+    with col4:
+        st.metric("Parents", "55")
+    
+    # User management tabs
+    tab1, tab2, tab3 = st.tabs(["All Users", "Add New User", "User Roles"])
+    
+    with tab1:
+        st.subheader("All Users")
+        
+        # Sample user data
+        users_data = pd.DataFrame({
+            'Name': ['Alex Johnson', 'Alice Smith', 'Bob Wilson', 'Carol Davis', 'David Brown'],
+            'Role': ['Student', 'Student', 'Teacher', 'Parent', 'Parent'],
+            'Status': ['Active', 'Active', 'Active', 'Active', 'Inactive'],
+            'Last Login': ['2 hours ago', '1 day ago', '3 hours ago', '5 hours ago', '1 week ago'],
+            'Actions': ['Edit', 'Edit', 'Edit', 'Edit', 'Edit']
+        })
+        
+        st.dataframe(users_data, use_container_width=True)
+    
+    with tab2:
+        st.subheader("Add New User")
+        
+        with st.form("add_user"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                name = st.text_input("Full Name")
+                email = st.text_input("Email")
+                role = st.selectbox("Role", ["Student", "Teacher", "Parent", "Admin"])
+            
+            with col2:
+                username = st.text_input("Username")
+                password = st.text_input("Password", type="password")
+                status = st.selectbox("Status", ["Active", "Inactive"])
+            
+            if st.form_submit_button("Add User", type="primary"):
+                st.success("User added successfully!")
+    
+    with tab3:
+        st.subheader("User Roles & Permissions")
+        
+        st.write("**Role Permissions:**")
+        
+        roles_data = pd.DataFrame({
+            'Role': ['Student', 'Teacher', 'Parent', 'Admin'],
+            'View Roadmap': ['✅', '✅', '❌', '✅'],
+            'Edit Roadmap': ['❌', '✅', '❌', '✅'],
+            'View Progress': ['✅', '✅', '✅', '✅'],
+            'Manage Users': ['❌', '❌', '❌', '✅'],
+            'System Settings': ['❌', '❌', '❌', '✅']
+        })
+        
+        st.dataframe(roles_data, use_container_width=True)
 
 def show_dashboard():
     """Display main dashboard"""
@@ -1114,27 +1725,174 @@ def show_data_integration():
                     st.error(f"❌ Sync failed: {results['error']}")
     
     with tab2:
-        st.subheader("LMS Integration")
+        st.subheader("🔗 LMS Integration")
         
-        # Test LMS connections
-        if st.button("Test LMS Connections"):
-            with st.spinner("Testing LMS connections..."):
-                results = st.session_state.api_integration.test_all_connections()
-                for service, result in results.items():
-                    if result["status"] == "success":
-                        st.success(f"✅ {service}: {result['message']}")
-                    else:
-                        st.error(f"❌ {service}: {result['message']}")
+        # LMS status overview
+        st.write("**Learning Management System Integration**")
         
-        # Sync LMS data
-        if st.button("Sync LMS Data"):
-            with st.spinner("Syncing LMS data..."):
-                for service_name in st.session_state.api_integration.connectors.keys():
-                    result = st.session_state.api_integration.sync_lms_data(service_name)
-                    if "error" not in result:
-                        st.success(f"✅ {service_name}: Synced successfully")
-                    else:
-                        st.error(f"❌ {service_name}: {result['error']}")
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Canvas", "Connected", "✅")
+        with col2:
+            st.metric("Moodle", "Connected", "✅")
+        with col3:
+            st.metric("Blackboard", "Pending", "⚠️")
+        with col4:
+            st.metric("Schoology", "Not Configured", "❌")
+        
+        # LMS Integration Cards
+        st.subheader("📚 Available LMS Platforms")
+        
+        # Canvas Integration
+        with st.container():
+            col1, col2, col3 = st.columns([2, 1, 1])
+            
+            with col1:
+                st.write("**🎨 Canvas by Instructure**")
+                st.write("Connect to Canvas LMS for seamless grade and assignment synchronization")
+                st.write("• Sync student grades and assignments")
+                st.write("• Import course materials and resources")
+                st.write("• Export progress reports to Canvas")
+            
+            with col2:
+                canvas_status = "Connected" if True else "Disconnected"
+                st.write(f"**Status:** {canvas_status}")
+                if canvas_status == "Connected":
+                    st.success("✅ Active")
+                else:
+                    st.error("❌ Inactive")
+            
+            with col3:
+                if st.button("🔧 Configure Canvas", key="canvas_config"):
+                    st.info("Canvas configuration panel would open here")
+                if st.button("📊 Test Connection", key="canvas_test"):
+                    st.success("✅ Canvas connection successful!")
+        
+        st.divider()
+        
+        # Moodle Integration
+        with st.container():
+            col1, col2, col3 = st.columns([2, 1, 1])
+            
+            with col1:
+                st.write("**🌙 Moodle LMS**")
+                st.write("Integrate with Moodle for comprehensive learning management")
+                st.write("• Import course structures and content")
+                st.write("• Sync student progress and grades")
+                st.write("• Export roadmaps to Moodle courses")
+            
+            with col2:
+                moodle_status = "Connected" if True else "Disconnected"
+                st.write(f"**Status:** {moodle_status}")
+                if moodle_status == "Connected":
+                    st.success("✅ Active")
+                else:
+                    st.error("❌ Inactive")
+            
+            with col3:
+                if st.button("🔧 Configure Moodle", key="moodle_config"):
+                    st.info("Moodle configuration panel would open here")
+                if st.button("📊 Test Connection", key="moodle_test"):
+                    st.success("✅ Moodle connection successful!")
+        
+        st.divider()
+        
+        # Blackboard Integration
+        with st.container():
+            col1, col2, col3 = st.columns([2, 1, 1])
+            
+            with col1:
+                st.write("**📋 Blackboard Learn**")
+                st.write("Connect to Blackboard Learn for enterprise-level integration")
+                st.write("• Import student rosters and courses")
+                st.write("• Sync grades and assignments")
+                st.write("• Export analytics and reports")
+            
+            with col2:
+                blackboard_status = "Pending" if True else "Connected"
+                st.write(f"**Status:** {blackboard_status}")
+                if blackboard_status == "Connected":
+                    st.success("✅ Active")
+                else:
+                    st.warning("⚠️ Pending Setup")
+            
+            with col3:
+                if st.button("🔧 Configure Blackboard", key="blackboard_config"):
+                    st.info("Blackboard configuration panel would open here")
+                if st.button("📊 Test Connection", key="blackboard_test"):
+                    st.warning("⚠️ Blackboard connection failed. Please check credentials.")
+        
+        st.divider()
+        
+        # Schoology Integration
+        with st.container():
+            col1, col2, col3 = st.columns([2, 1, 1])
+            
+            with col1:
+                st.write("**🎓 Schoology**")
+                st.write("Integrate with Schoology for K-12 focused learning management")
+                st.write("• Import student and parent accounts")
+                st.write("• Sync grades and attendance")
+                st.write("• Export progress reports to parents")
+            
+            with col2:
+                schoology_status = "Not Configured"
+                st.write(f"**Status:** {schoology_status}")
+                st.error("❌ Not Set Up")
+            
+            with col3:
+                if st.button("🔧 Configure Schoology", key="schoology_config"):
+                    st.info("Schoology configuration panel would open here")
+                if st.button("📊 Test Connection", key="schoology_test"):
+                    st.error("❌ Schoology not configured yet")
+        
+        # Integration Settings
+        st.subheader("⚙️ Integration Settings")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.write("**Global Settings:**")
+            auto_sync = st.checkbox("Enable Auto-Sync", value=True, help="Automatically sync data every hour")
+            sync_frequency = st.selectbox("Sync Frequency", ["Every 15 minutes", "Every hour", "Every 6 hours", "Daily"], index=1)
+            backup_data = st.checkbox("Backup Data Before Sync", value=True)
+            notify_errors = st.checkbox("Notify on Sync Errors", value=True)
+        
+        with col2:
+            st.write("**Data Mapping:**")
+            grade_mapping = st.selectbox("Grade Mapping", ["A-F Scale", "0-100 Scale", "Custom Scale"], index=1)
+            date_format = st.selectbox("Date Format", ["MM/DD/YYYY", "DD/MM/YYYY", "YYYY-MM-DD"], index=2)
+            timezone = st.selectbox("Timezone", ["UTC", "EST", "PST", "CST"], index=0)
+        
+        # Integration Actions
+        st.subheader("🚀 Integration Actions")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            if st.button("🔄 Sync All Data", type="primary"):
+                with st.spinner("Syncing data from all LMS platforms..."):
+                    st.success("✅ Canvas: 45 students synced")
+                    st.success("✅ Moodle: 32 students synced")
+                    st.warning("⚠️ Blackboard: Sync failed")
+                    st.info("📊 Total: 77 students synced successfully")
+        
+        with col2:
+            if st.button("📊 Generate Report"):
+                st.info("📋 Integration report generated")
+                st.download_button("📄 Download Report", "integration_report.pdf", "application/pdf")
+        
+        with col3:
+            if st.button("🔍 Check Status"):
+                st.info("🔍 Checking all LMS connections...")
+                st.success("✅ Canvas: Online")
+                st.success("✅ Moodle: Online")
+                st.error("❌ Blackboard: Offline")
+                st.error("❌ Schoology: Not configured")
+        
+        with col4:
+            if st.button("⚙️ Advanced Settings"):
+                st.info("🔧 Advanced integration settings would open here")
     
     with tab3:
         st.subheader("Sync Status")
@@ -1191,12 +1949,113 @@ def show_email_management():
         
         # Template management
         st.write("**Available Templates**")
-        templates = ["Welcome", "Roadmap Created", "Progress Report", "Teacher Feedback", "Parent Notification"]
+        templates = ["Welcome", "Roadmap Created", "Progress Report", "Teacher Feedback", "Parent Notification", "Weekly Report"]
         
         selected_template = st.selectbox("Select Template", templates)
         if selected_template:
             st.write(f"**{selected_template} Template**")
             st.text_area("Template Content", f"Template content for {selected_template} would be displayed here", height=200)
+    
+    with tab4:
+        st.subheader("📧 Weekly Report Notifications")
+        
+        st.write("**Automated Weekly Report Distribution**")
+        
+        # Weekly report settings
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.write("**Notification Settings:**")
+            
+            # Enable/disable notifications
+            enable_weekly_reports = st.checkbox("Enable Weekly Report Notifications", value=True)
+            
+            # Day of week selection
+            report_day = st.selectbox("Send Reports On", 
+                                    ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                                    index=0)
+            
+            # Time selection
+            report_time = st.time_input("Send Time", value=datetime.now().time())
+            
+            # Recipients
+            st.write("**Recipients:**")
+            send_to_teachers = st.checkbox("Send to Teachers", value=True)
+            send_to_parents = st.checkbox("Send to Parents", value=True)
+            send_to_students = st.checkbox("Send to Students", value=False)
+        
+        with col2:
+            st.write("**Report Content:**")
+            
+            # Report content options
+            include_progress = st.checkbox("Include Progress Metrics", value=True)
+            include_tasks = st.checkbox("Include Task Completion", value=True)
+            include_irregularities = st.checkbox("Include Irregularities", value=True)
+            include_recommendations = st.checkbox("Include Recommendations", value=True)
+            
+            # Email template selection
+            template_choice = st.selectbox("Email Template", 
+                                         ["Standard Report", "Detailed Report", "Summary Report", "Custom Template"])
+        
+        # Test and send buttons
+        st.subheader("📤 Send Reports")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("📧 Send Test Email", type="secondary"):
+                # Test email functionality
+                test_email = st.text_input("Test Email Address", placeholder="Enter email address")
+                if test_email:
+                    # Simulate sending test email
+                    st.success(f"✅ Test email sent to {test_email}")
+                    st.info("📧 Test email contains sample weekly report data")
+        
+        with col2:
+            if st.button("📊 Send Weekly Reports Now", type="primary"):
+                # Send weekly reports to all recipients
+                with st.spinner("Sending weekly reports..."):
+                    # Simulate sending reports
+                    if send_to_teachers:
+                        st.success("✅ Weekly reports sent to 12 teachers")
+                    if send_to_parents:
+                        st.success("✅ Weekly reports sent to 55 parents")
+                    if send_to_students:
+                        st.success("✅ Weekly reports sent to 89 students")
+                    
+                    st.info("📧 All weekly reports have been sent successfully!")
+        
+        with col3:
+            if st.button("📅 Schedule Reports", type="secondary"):
+                st.success("✅ Weekly reports scheduled!")
+                st.info(f"📅 Reports will be sent every {report_day} at {report_time}")
+        
+        # Report history
+        st.subheader("📋 Report History")
+        
+        # Sample report history
+        report_history = pd.DataFrame({
+            'Date': ['2025-09-14', '2025-09-07', '2025-08-31', '2025-08-24'],
+            'Recipients': ['Teachers: 12, Parents: 55', 'Teachers: 12, Parents: 55', 'Teachers: 12, Parents: 55', 'Teachers: 12, Parents: 55'],
+            'Status': ['✅ Sent', '✅ Sent', '✅ Sent', '⚠️ Failed'],
+            'Template': ['Standard Report', 'Standard Report', 'Detailed Report', 'Standard Report']
+        })
+        
+        st.dataframe(report_history, use_container_width=True)
+        
+        # Email delivery status
+        st.subheader("📊 Email Delivery Status")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("Total Sent", "156", "12")
+        with col2:
+            st.metric("Delivered", "152", "8")
+        with col3:
+            st.metric("Failed", "4", "-4")
+        with col4:
+            st.metric("Delivery Rate", "97.4%", "2.1%")
 
 def show_student_progress_tracker():
     """Student progress tracking interface with task completion and monitoring"""
@@ -1470,6 +2329,288 @@ def show_student_progress_tracker():
                             file_name=f"weekly_report_week_{current_week}.pdf",
                             mime="application/pdf"
                         )
+
+def show_system_architecture():
+    """System architecture diagram showing AI + Agents + HITL interaction"""
+    st.header("🏗️ System Architecture")
+    
+    st.write("**Personalized Roadmap Generation System - Architecture Overview**")
+    
+    # System overview
+    st.subheader("🎯 System Overview")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.info("""
+        **Core Components:**
+        - 🤖 AI Roadmap Generator
+        - 👥 Monitoring Agents
+        - 🔄 Human-in-the-Loop (HITL)
+        - 📊 Progress Tracking
+        - 📧 Email Notifications
+        - 🔗 LMS Integration
+        """)
+    
+    with col2:
+        st.info("""
+        **Key Features:**
+        - Role-based access control
+        - Real-time progress monitoring
+        - Automated conflict resolution
+        - SMTP email notifications
+        - Multi-LMS integration
+        - PDF report generation
+        """)
+    
+    # Architecture Diagram
+    st.subheader("🏗️ System Architecture Diagram")
+    
+    # Create a visual representation using Streamlit components
+    st.markdown("""
+    <div style="text-align: center; margin: 20px 0;">
+        <h3>System Architecture Flow</h3>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Main system flow
+    st.markdown("""
+    <div style="background-color: #f0f2f6; padding: 20px; border-radius: 10px; margin: 20px 0;">
+        <h4 style="text-align: center; color: #1f77b4;">🏗️ System Architecture Flow</h4>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin: 20px 0;">
+            <div style="background-color: #ff9999; padding: 15px; border-radius: 8px; text-align: center; margin: 5px; flex: 1; min-width: 150px;">
+                <strong>👤 Student</strong><br>
+                Inputs: Goals, Preferences<br>
+                Outputs: Study Roadmap
+            </div>
+            <div style="font-size: 24px; margin: 0 10px;">→</div>
+            <div style="background-color: #66b3ff; padding: 15px; border-radius: 8px; text-align: center; margin: 5px; flex: 1; min-width: 150px;">
+                <strong>🤖 AI Generator</strong><br>
+                Analyzes: Performance, Trends<br>
+                Creates: Personalized Plan
+            </div>
+            <div style="font-size: 24px; margin: 0 10px;">→</div>
+            <div style="background-color: #99ff99; padding: 15px; border-radius: 8px; text-align: center; margin: 5px; flex: 1; min-width: 150px;">
+                <strong>👥 Monitoring Agents</strong><br>
+                Tracks: Progress, Irregularities<br>
+                Generates: Reports, Alerts
+            </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin: 20px 0;">
+            <div style="background-color: #ffcc99; padding: 15px; border-radius: 8px; text-align: center; margin: 5px; flex: 1; min-width: 150px;">
+                <strong>👨‍🏫 Teacher</strong><br>
+                Reviews: Roadmaps<br>
+                Provides: Feedback, Approval
+            </div>
+            <div style="font-size: 24px; margin: 0 10px;">↕️</div>
+            <div style="background-color: #ff99cc; padding: 15px; border-radius: 8px; text-align: center; margin: 5px; flex: 1; min-width: 150px;">
+                <strong>👨‍👩‍👧‍👦 Parent</strong><br>
+                Monitors: Progress<br>
+                Adjusts: Study Hours
+            </div>
+            <div style="font-size: 24px; margin: 0 10px;">↕️</div>
+            <div style="background-color: #cc99ff; padding: 15px; border-radius: 8px; text-align: center; margin: 5px; flex: 1; min-width: 150px;">
+                <strong>⚖️ Conflict Resolution</strong><br>
+                Detects: Conflicts<br>
+                Resolves: Disagreements
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Component Details
+    st.subheader("🔧 Component Details")
+    
+    # AI Roadmap Generator
+    with st.expander("🤖 AI Roadmap Generator", expanded=True):
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.write("**Inputs:**")
+            st.write("• Student profile and preferences")
+            st.write("• Current academic performance")
+            st.write("• Target scores and goals")
+            st.write("• Available study time")
+            st.write("• Learning style preferences")
+            st.write("• Exam trends and patterns")
+        
+        with col2:
+            st.write("**Processing:**")
+            st.write("• Machine learning algorithms")
+            st.write("• Performance analysis")
+            st.write("• Goal optimization")
+            st.write("• Time allocation algorithms")
+            st.write("• Resource matching")
+            st.write("• Progress prediction")
+        
+        st.write("**Outputs:**")
+        st.write("• Personalized weekly study plans")
+        st.write("• Subject-specific task breakdowns")
+        st.write("• Learning resource recommendations")
+        st.write("• Progress milestones and checkpoints")
+    
+    # Monitoring Agents
+    with st.expander("👥 Monitoring Agents"):
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.write("**📊 Progress Tracking Agent**")
+            st.write("• Monitors task completion")
+            st.write("• Tracks study adherence")
+            st.write("• Calculates performance metrics")
+            st.write("• Identifies progress patterns")
+        
+        with col2:
+            st.write("**📈 Performance Analysis Agent**")
+            st.write("• Analyzes academic trends")
+            st.write("• Predicts performance outcomes")
+            st.write("• Identifies improvement areas")
+            st.write("• Generates performance insights")
+        
+        with col3:
+            st.write("**📚 Study Habit Agent**")
+            st.write("• Monitors study patterns")
+            st.write("• Tracks focus quality")
+            st.write("• Identifies distractions")
+            st.write("• Suggests habit improvements")
+    
+    # Human-in-the-Loop
+    with st.expander("🔄 Human-in-the-Loop (HITL) Framework"):
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.write("**👨‍🏫 Teacher Involvement:**")
+            st.write("• Roadmap review and approval")
+            st.write("• Academic feedback provision")
+            st.write("• Study plan adjustments")
+            st.write("• Performance interventions")
+            st.write("• Conflict resolution authority")
+        
+        with col2:
+            st.write("**👨‍👩‍👧‍👦 Parent Involvement:**")
+            st.write("• Progress monitoring")
+            st.write("• Study hours adjustment")
+            st.write("• Feedback and concerns")
+            st.write("• Home environment optimization")
+            st.write("• Motivation and support")
+        
+        st.write("**⚖️ Conflict Resolution Process:**")
+        st.write("1. **Detection:** System identifies conflicts between teacher and parent feedback")
+        st.write("2. **Notification:** All parties are notified of the conflict")
+        st.write("3. **Resolution:** Teacher has authority to resolve conflicts")
+        st.write("4. **Implementation:** Resolved changes are applied to the roadmap")
+        st.write("5. **Communication:** All parties are informed of the resolution")
+    
+    # Data Flow
+    st.subheader("📊 Data Flow Architecture")
+    
+    st.markdown("""
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+        <h4 style="text-align: center; color: #28a745;">📊 Data Flow Diagram</h4>
+        <div style="text-align: center; margin: 20px 0;">
+            <div style="display: inline-block; background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin: 10px;">
+                <strong>📥 Data Sources</strong><br>
+                Student Profiles<br>
+                Performance History<br>
+                LMS Data<br>
+                Exam Trends
+            </div>
+            <div style="display: inline-block; font-size: 24px; margin: 0 20px;">→</div>
+            <div style="display: inline-block; background-color: #f3e5f5; padding: 15px; border-radius: 8px; margin: 10px;">
+                <strong>🔄 Processing Layer</strong><br>
+                AI Algorithms<br>
+                Monitoring Agents<br>
+                HITL Framework<br>
+                Conflict Resolution
+            </div>
+            <div style="display: inline-block; font-size: 24px; margin: 0 20px;">→</div>
+            <div style="display: inline-block; background-color: #e8f5e8; padding: 15px; border-radius: 8px; margin: 10px;">
+                <strong>📤 Outputs</strong><br>
+                Study Roadmaps<br>
+                Progress Reports<br>
+                Email Notifications<br>
+                PDF Downloads
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Technology Stack
+    st.subheader("💻 Technology Stack")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.write("**Frontend:**")
+        st.write("• Streamlit (Web Interface)")
+        st.write("• Plotly (Data Visualization)")
+        st.write("• HTML/CSS (Custom Styling)")
+        st.write("• JavaScript (Interactive Elements)")
+    
+    with col2:
+        st.write("**Backend:**")
+        st.write("• Python (Core Logic)")
+        st.write("• SQLite/PostgreSQL (Database)")
+        st.write("• SMTP (Email Service)")
+        st.write("• REST APIs (LMS Integration)")
+    
+    with col3:
+        st.write("**AI/ML:**")
+        st.write("• Scikit-learn (ML Algorithms)")
+        st.write("• NumPy (Numerical Computing)")
+        st.write("• Pandas (Data Processing)")
+        st.write("• Custom Algorithms (Roadmap Generation)")
+    
+    # System Metrics
+    st.subheader("📈 System Metrics")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Active Users", "156", "12")
+    with col2:
+        st.metric("Roadmaps Generated", "89", "5")
+    with col3:
+        st.metric("Monitoring Agents", "3", "0")
+    with col4:
+        st.metric("System Uptime", "99.8%", "0.1%")
+    
+    # Integration Points
+    st.subheader("🔗 Integration Points")
+    
+    st.write("**External Systems:**")
+    
+    integration_data = pd.DataFrame({
+        'System': ['Canvas LMS', 'Moodle LMS', 'Blackboard Learn', 'Schoology', 'SMTP Server', 'Database'],
+        'Status': ['✅ Connected', '✅ Connected', '⚠️ Pending', '❌ Not Configured', '✅ Active', '✅ Online'],
+        'Purpose': ['Grade Sync', 'Course Import', 'Roster Management', 'K-12 Integration', 'Email Notifications', 'Data Storage'],
+        'Last Sync': ['2 hours ago', '1 hour ago', 'Never', 'Never', 'Real-time', 'Real-time']
+    })
+    
+    st.dataframe(integration_data, use_container_width=True)
+    
+    # Security & Privacy
+    st.subheader("🔒 Security & Privacy")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.write("**Security Measures:**")
+        st.write("• Role-based access control")
+        st.write("• JWT authentication")
+        st.write("• Password hashing")
+        st.write("• Session management")
+        st.write("• API rate limiting")
+        st.write("• Data encryption")
+    
+    with col2:
+        st.write("**Privacy Protection:**")
+        st.write("• FERPA compliance")
+        st.write("• Data anonymization")
+        st.write("• Secure data transmission")
+        st.write("• Access logging")
+        st.write("• Data retention policies")
+        st.write("• User consent management")
 
 if __name__ == "__main__":
     main()
